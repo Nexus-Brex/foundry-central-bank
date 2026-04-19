@@ -27,7 +27,8 @@ contract CentralBankV5_Yield {
     IERC20 public stakingToken;
 
     //fixed rate - for each second in stake, user earn
-    uint256 public rewardRate = 100;
+    uint256 public constant SECONDS_PER_MONTH = 2_592_000; // 30 days x 86400 seconds
+    uint256 public rewardRate = 300; // 300 = 3.00% (in basis point:1 = 0.01%)
     uint256 public constant PRECISION = 1e18;
     address public owner;
 
@@ -119,8 +120,8 @@ contract CentralBankV5_Yield {
     //function claim
     function claimRewards() public updateReward(msg.sender) {
         //rewardToClaim = 5_000_000_000_000_000_000 /1e18 = 5 token
-        uint256 rewardToClaim = databaseBank[msg.sender].accumulatedRewards /
-            PRECISION;
+        uint256 rewardToClaim = databaseBank[msg.sender].accumulatedRewards;
+
         require(rewardToClaim > 0, "No rewards to claim!");
         //verify if the bank have enought funds
         require(
@@ -149,8 +150,8 @@ contract CentralBankV5_Yield {
         //reward scaled = (balance*seconds*rate*PRECISION)/100_000
         uint256 currentReward = (currentUser.stakedBalance *
             timeElapsed *
-            rewardRate *
-            PRECISION) / 100_000;
+            rewardRate) / (SECONDS_PER_MONTH * 10_000);
+
         return currentReward;
     }
 }
