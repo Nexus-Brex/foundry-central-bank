@@ -66,7 +66,7 @@ contract CentralBankV5Test is Test {
         vm.stopPrank();
 
         //read the database of bank for user
-        (uint256 stakedBalance, , ) = bank.databaseBank(user);
+        (uint256 stakedBalance,,) = bank.databaseBank(user);
 
         //stakedBalance must be 20ILA
         assertEq(stakedBalance, STAKE_AMOUNT);

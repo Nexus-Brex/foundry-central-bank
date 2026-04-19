@@ -7,11 +7,7 @@ interface IERC20 {
     function transfer(address to, uint256 amount) external returns (bool);
 
     //move the client's token to the contract(for stake() e fundReward()
-    function transferFrom(
-        address from,
-        address to,
-        uint256 amount
-    ) external returns (bool);
+    function transferFrom(address from, address to, uint256 amount) external returns (bool);
 
     function balanceOf(address account) external view returns (uint256);
 }
@@ -81,11 +77,7 @@ contract CentralBankV5_Yield {
     function fundRewards(uint256 _amount) public onlyOwner {
         require(_amount > 0, "Amount must be greater than 0!");
         //move token from msg.sender to the contract
-        bool success = rewardToken.transferFrom(
-            msg.sender,
-            address(this),
-            _amount
-        );
+        bool success = rewardToken.transferFrom(msg.sender, address(this), _amount);
         require(success, "Funding failed!");
     }
 
@@ -95,21 +87,14 @@ contract CentralBankV5_Yield {
         //effect - update the balance
         databaseBank[msg.sender].stakedBalance += _amount;
         //interaction- move the usdc from his wallet to our contract
-        bool success = stakingToken.transferFrom(
-            msg.sender,
-            address(this),
-            _amount
-        );
+        bool success = stakingToken.transferFrom(msg.sender, address(this), _amount);
         require(success, "Error: Deposit failed!");
     }
 
     //function withdraw
     function withdraw(uint256 _amount) public updateReward(msg.sender) {
         require(_amount > 0, " Cannot withdraw 0!!");
-        require(
-            databaseBank[msg.sender].stakedBalance >= _amount,
-            " You haven't enought funds!"
-        );
+        require(databaseBank[msg.sender].stakedBalance >= _amount, " You haven't enought funds!");
         //effect ,update the balance
         databaseBank[msg.sender].stakedBalance -= _amount;
         //interaction, move token to the user
@@ -124,10 +109,7 @@ contract CentralBankV5_Yield {
 
         require(rewardToClaim > 0, "No rewards to claim!");
         //verify if the bank have enought funds
-        require(
-            rewardToken.balanceOf(address(this)) >= rewardToClaim,
-            "Bank is out of funds!"
-        );
+        require(rewardToken.balanceOf(address(this)) >= rewardToClaim, "Bank is out of funds!");
         //effect
         databaseBank[msg.sender].accumulatedRewards = 0;
         //interaction
@@ -148,9 +130,7 @@ contract CentralBankV5_Yield {
         uint256 timeElapsed = block.timestamp - currentUser.lastUpdateTime;
 
         //reward scaled = (balance*seconds*rate*PRECISION)/100_000
-        uint256 currentReward = (currentUser.stakedBalance *
-            timeElapsed *
-            rewardRate) / (SECONDS_PER_MONTH * 10_000);
+        uint256 currentReward = (currentUser.stakedBalance * timeElapsed * rewardRate) / (SECONDS_PER_MONTH * 10_000);
 
         return currentReward;
     }
